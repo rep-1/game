@@ -14,6 +14,10 @@ public class Field extends JPanel implements ActionListener, Runnable {
 
     private int x, y;
 
+    private JButton btnLeft;
+    private JButton btnRight;
+    private JButton btnFire;
+
     public Field() {
         initField();
     }
@@ -22,6 +26,24 @@ public class Field extends JPanel implements ActionListener, Runnable {
         setBackground(Color.BLACK);
         setPreferredSize(new Dimension(500, 500));
         setDoubleBuffered(true);
+
+        setLayout(null);
+
+        btnLeft = new JButton("<");
+        btnRight = new JButton(">");
+        btnFire = new JButton("Fire");
+
+        btnLeft.addActionListener((e) -> { x = x -1; repaint();});
+
+        add(btnLeft);
+        add(btnRight);
+        add(btnFire);
+    }
+
+    public void placeButtons() {
+        btnLeft.setBounds(100, getHeight()- 20, 30, 20);
+        btnRight.setBounds(130, getHeight() - 20, 30, 20);
+        btnFire.setBounds(160, getHeight() - 20, 70, 20);
     }
 
     @Override

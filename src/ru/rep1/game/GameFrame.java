@@ -12,10 +12,13 @@ public class GameFrame extends JFrame {
     }
 
     private void initUI() {
-        add(new Field());
+        Field field = new Field();
+        add(field);
 
         setResizable(false);
         pack();
+
+        field.placeButtons();
 
         setTitle("Game");
         setLocationRelativeTo(null);
