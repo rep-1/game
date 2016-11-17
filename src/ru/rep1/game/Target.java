@@ -16,15 +16,19 @@ public class Target implements Drawable {
     private int shotCount = 2;
     private Color color = Color.RED;
     private int speed = 3;
+    private double from;
+    private double to;
 
     public Target() {
         shape = new Ellipse2D.Double();
     }
 
-    public Target(double x, double y) {
+    public Target(double x, double y, double from, double to) {
         this();
         this.x = x;
         this.y = y;
+        this.from = from;
+        this.to = to;
     }
 
     @Override
@@ -33,9 +37,6 @@ public class Target implements Drawable {
         g2.setColor(color);
         shape.setFrame(new Point2D.Double(x, y), new Dimension((int)radius, (int)radius));
         g2.fill(shape);
-
-        //g2.fillRect(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
-
         g2.dispose();
     }
 
@@ -50,16 +51,22 @@ public class Target implements Drawable {
         }
         if(shotCount == 0) {
             color = Color.WHITE;
+
+            speed = 0;
         }
+    }
+
+    public boolean isShot() {
+        return shotCount <= 0;
     }
 
     public void move() {
         x += speed;
 
-        if(x > Constant.GAME_WIDTH - 100 ) {
+        if(x > to) {
             speed = -speed;
         }
-        if(x <  100 ) {
+        if(x <  from) {
             speed = -speed;
         }
     }

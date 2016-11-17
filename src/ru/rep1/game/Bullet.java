@@ -18,7 +18,6 @@ public class Bullet implements Drawable {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setColor(Color.GREEN);
         g2.fillOval((int)x, (int)y, (int)diam, (int)diam);
-        //g2.fillRect(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
         g2.dispose();
     }
 

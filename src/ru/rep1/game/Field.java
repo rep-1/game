@@ -1,5 +1,7 @@
 package ru.rep1.game;
 
+import com.sun.xml.internal.ws.util.StreamUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -29,7 +31,10 @@ public class Field extends JPanel implements ActionListener, Runnable {
 
     private void initField() {
         bullets = new ArrayList<>();
-        targets = new Target[]{new Target(100, 100), new Target(250, 100), new Target(400, 100)};
+        targets = new Target[]{
+                new Target(Utils.getRandomNumberInRange(50, 100), 100, 50, 150),
+                new Target(Utils.getRandomNumberInRange(150, 300), 100, 150, 300),
+                new Target(Utils.getRandomNumberInRange(300, 450), 100, 300, 450)};
 
         setBackground(Color.BLACK);
         setPreferredSize(new Dimension(Constant.GAME_WIDTH, Constant.GAME_HEIGHT));
@@ -43,9 +48,7 @@ public class Field extends JPanel implements ActionListener, Runnable {
         btnRight = new JButton(">");
         btnFire = new JButton("Fire");
 
-        //btnLeft.addActionListener((e) -> { x = x - 1; cannon.turnLeft(); repaint();});
         btnLeft.addMouseListener(new ButtonPress(() -> { x = x - 1; cannon.turnLeft(); repaint();}));
-        //btnRight.addActionListener((e) -> { x = x + 1; cannon.turnRight(); repaint();});
         btnRight.addMouseListener(new ButtonPress(() -> { x = x + 1; cannon.turnRight(); repaint();}));
         btnFire.addActionListener((e) -> {
             Bullet bullet = new Bullet();
@@ -83,6 +86,14 @@ public class Field extends JPanel implements ActionListener, Runnable {
     }
 
     private void draw(Graphics g) {
+        if(checkWin()) {
+            Graphics g2 = g.create();
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font(Font.MONOSPACED, Font.BOLD, 40));
+            g2.drawString("You Win!", 200, Constant.GAME_HEIGHT / 2);
+            g2.dispose();
+        }
+
         cannon.draw(g);
         bullets.stream().forEach((b) -> {
             b.draw(g);
@@ -98,7 +109,7 @@ public class Field extends JPanel implements ActionListener, Runnable {
             Iterator<Bullet> bulletIterator = bullets.iterator();
             while (bulletIterator.hasNext()) {
                 Bullet bullet = bulletIterator.next();
-                if ((bullet.getX() > Constant.GAME_WIDTH || bullet.getY() > Constant.GAME_HEIGHT) || (bullet.getX() < 0 || bullet.getY() < 0)) {
+                if (bullet.isShot() || (bullet.getX() > Constant.GAME_WIDTH || bullet.getY() > Constant.GAME_HEIGHT) || (bullet.getX() < 0 || bullet.getY() < 0)) {
                     bulletIterator.remove();
                 }
             }
@@ -111,6 +122,10 @@ public class Field extends JPanel implements ActionListener, Runnable {
                 }
             });
         });
+    }
+
+    private boolean checkWin() {
+        return Stream.of(targets).filter((t) -> {return t.isShot();}).count() == targets.length;
     }
 
     @Override
