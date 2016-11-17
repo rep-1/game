@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.*;
 
 /**
  * Created by lshi on 17.11.2016.
@@ -18,22 +19,37 @@ public class Field extends JPanel implements ActionListener, Runnable {
     private JButton btnRight;
     private JButton btnFire;
 
+    private Cannon cannon;
+    private java.util.List<Bullet> bullets;
+
     public Field() {
         initField();
     }
 
     private void initField() {
+        bullets = new ArrayList<>();
+
         setBackground(Color.BLACK);
-        setPreferredSize(new Dimension(500, 500));
+        setPreferredSize(new Dimension(Constant.GAME_WIDTH, Constant.GAME_HEIGHT));
         setDoubleBuffered(true);
 
         setLayout(null);
+
+        cannon = new Cannon();
 
         btnLeft = new JButton("<");
         btnRight = new JButton(">");
         btnFire = new JButton("Fire");
 
-        btnLeft.addActionListener((e) -> { x = x -1; repaint();});
+        btnLeft.addActionListener((e) -> { x = x - 1; cannon.turnLeft(); repaint();});
+        btnRight.addActionListener((e) -> { x = x + 1; cannon.turnRight(); repaint();});
+        btnFire.addActionListener((e) -> {
+            Bullet bullet = new Bullet();
+            bullet.setX((int)cannon.getFirePosition().getX());
+            bullet.setY((int)cannon.getFirePosition().getY());
+            bullet.setAngle(cannon.getAngle());
+            bullets.add(bullet);
+            repaint();});
 
         add(btnLeft);
         add(btnRight);
@@ -41,9 +57,9 @@ public class Field extends JPanel implements ActionListener, Runnable {
     }
 
     public void placeButtons() {
-        btnLeft.setBounds(100, getHeight()- 20, 30, 20);
-        btnRight.setBounds(130, getHeight() - 20, 30, 20);
-        btnFire.setBounds(160, getHeight() - 20, 70, 20);
+        btnLeft.setBounds(100, getHeight()- 20, 60, 20);
+        btnRight.setBounds(160, getHeight() - 20, 60, 20);
+        btnFire.setBounds(220, getHeight() - 20, 70, 20);
     }
 
     @Override
@@ -62,7 +78,8 @@ public class Field extends JPanel implements ActionListener, Runnable {
     }
 
     private void draw(Graphics g) {
-        g.drawString("Test", x, y);
+        cannon.draw(g);
+        bullets.stream().forEach((b) -> {b.draw(g);});
         Toolkit.getDefaultToolkit().sync();
     }
 
@@ -75,6 +92,8 @@ public class Field extends JPanel implements ActionListener, Runnable {
         while (true) {
             x += 1;
             y += 1;
+
+            bullets.stream().forEach((b) -> {b.move();});
 
             repaint();
 
