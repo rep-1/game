@@ -9,7 +9,7 @@ public class Bullet implements Drawable {
     private double x;
     private double y;
     private double angle;
-    private double speed = 2;
+    private double speed = 4;
     private double diam = 5;
     private boolean isShot = false;
 

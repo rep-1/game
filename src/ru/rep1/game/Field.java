@@ -22,6 +22,7 @@ public class Field extends JPanel implements ActionListener, Runnable {
     private JButton btnFire;
 
     private Cannon cannon;
+    private BulletsHolder bulletsHolder;
     private java.util.List<Bullet> bullets;
     private Target[] targets;
 
@@ -30,11 +31,13 @@ public class Field extends JPanel implements ActionListener, Runnable {
     }
 
     private void initField() {
+        bulletsHolder = new BulletsHolder();
         bullets = new ArrayList<>();
+
         targets = new Target[]{
-                new Target(Utils.getRandomNumberInRange(50, 100), 100, 50, 150),
+                new Target(Utils.getRandomNumberInRange(50, 100), 30, 50, 150),
                 new Target(Utils.getRandomNumberInRange(150, 300), 100, 150, 300),
-                new Target(Utils.getRandomNumberInRange(300, 450), 100, 300, 450)};
+                new Target(Utils.getRandomNumberInRange(300, 450), 60, 300, 450)};
 
         setBackground(Color.BLACK);
         setPreferredSize(new Dimension(Constant.GAME_WIDTH, Constant.GAME_HEIGHT));
@@ -48,15 +51,25 @@ public class Field extends JPanel implements ActionListener, Runnable {
         btnRight = new JButton(">");
         btnFire = new JButton("Fire");
 
-        btnLeft.addMouseListener(new ButtonPress(() -> { x = x - 1; cannon.turnLeft(); repaint();}));
-        btnRight.addMouseListener(new ButtonPress(() -> { x = x + 1; cannon.turnRight(); repaint();}));
-        btnFire.addActionListener((e) -> {
-            Bullet bullet = new Bullet();
-            bullet.setX((int) cannon.getFirePosition().getX());
-            bullet.setY((int) cannon.getFirePosition().getY());
-            bullet.setAngle(cannon.getAngle());
-            bullets.add(bullet);
+        btnLeft.addMouseListener(new ButtonPress(() -> {
+            x = x - 1;
+            cannon.turnLeft();
             repaint();
+        }));
+        btnRight.addMouseListener(new ButtonPress(() -> {
+            x = x + 1;
+            cannon.turnRight();
+            repaint();
+        }));
+        btnFire.addActionListener((e) -> {
+            if(bulletsHolder.getBullet()) {
+                Bullet bullet = new Bullet();
+                bullet.setX((int) cannon.getFirePosition().getX());
+                bullet.setY((int) cannon.getFirePosition().getY());
+                bullet.setAngle(cannon.getAngle());
+                bullets.add(bullet);
+                repaint();
+            }
         });
 
         add(btnLeft);
@@ -86,7 +99,7 @@ public class Field extends JPanel implements ActionListener, Runnable {
     }
 
     private void draw(Graphics g) {
-        if(checkWin()) {
+        if (checkWin()) {
             Graphics g2 = g.create();
             g2.setColor(Color.WHITE);
             g2.setFont(new Font(Font.MONOSPACED, Font.BOLD, 40));
@@ -95,6 +108,8 @@ public class Field extends JPanel implements ActionListener, Runnable {
         }
 
         cannon.draw(g);
+
+        bulletsHolder.draw(g);
         bullets.stream().forEach((b) -> {
             b.draw(g);
         });
@@ -113,19 +128,22 @@ public class Field extends JPanel implements ActionListener, Runnable {
                     bulletIterator.remove();
                 }
             }
-        }
-        Stream.of(targets).forEach((t) -> {
-            bullets.forEach((b) -> {
-                if (!b.isShot() && t.getBounds().intersects(b.getBounds())) {
-                    t.shot();
-                    b.shot();
-                }
+
+            Stream.of(targets).forEach((t) -> {
+                bullets.forEach((b) -> {
+                    if (!b.isShot() && t.getBounds().intersects(b.getBounds())) {
+                        t.shot();
+                        b.shot();
+                    }
+                });
             });
-        });
+        }
     }
 
     private boolean checkWin() {
-        return Stream.of(targets).filter((t) -> {return t.isShot();}).count() == targets.length;
+        return Stream.of(targets).filter((t) -> {
+            return t.isShot();
+        }).count() == targets.length;
     }
 
     @Override
