@@ -43,41 +43,47 @@ public class BulletsHolder implements Drawable {
     private volatile boolean working;
 
     public boolean getBullet() {
-        if (!working) {
-            new Thread(() -> {
+        synchronized (BulletsHolder.class) {
+            if (!working) {
                 working = true;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                working = false;
-                flag = true;
-                synchronized (BulletsHolder.class) {
-                    currentCount--;
-                    if (currentCount < 0) {
-                        currentCount = 0;
-                        flag = false;
-
-                        reload();
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+                    flag = true;
+                    working = false;
+                }).start();
+
+                if (flag) {
+                    currentCount--;
                 }
-            }).start();
-            boolean result = flag;
-            flag = false;
-            return result;
+                if (currentCount < 0) {
+                    currentCount = 0;
+                    flag = false;
+                }
+
+                return flag;
+            }
+            return false;
         }
-        return false;
     }
 
     private void reload() {
         new Thread(() -> {
+
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            currentCount = MAX;
+
+            synchronized (BulletsHolder.class) {
+                if (currentCount <= 0) {
+                    currentCount = MAX;
+                }
+            }
         }).start();
     }
 
@@ -94,5 +100,12 @@ public class BulletsHolder implements Drawable {
         g2.dispose();
 
         drawBullets(g);
+
+
+        synchronized (BulletsHolder.class) {
+            if (currentCount <= 0) {
+                reload();
+            }
+        }
     }
 }
