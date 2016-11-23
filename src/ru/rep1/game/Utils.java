@@ -1,5 +1,7 @@
 package ru.rep1.game;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.Random;
 
 /**
@@ -14,5 +16,10 @@ public class Utils {
 
         Random r = new Random();
         return r.nextInt((max - min) + 1) + min;
+    }
+
+    public static Image loadImage(String name) {
+        ImageIcon image = new ImageIcon(Utils.class.getClassLoader().getResource(name));
+        return image.getImage();
     }
 }

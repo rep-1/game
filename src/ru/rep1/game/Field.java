@@ -26,11 +26,15 @@ public class Field extends JPanel implements ActionListener, Runnable {
     private java.util.List<Bullet> bullets;
     private Target[] targets;
 
+    private Image roomImg;
+
     public Field() {
         initField();
     }
 
     private void initField() {
+        roomImg = Toolkit.getDefaultToolkit().getImage("room.png");
+
         bulletsHolder = new BulletsHolder();
         bullets = new ArrayList<>();
 
@@ -98,6 +102,15 @@ public class Field extends JPanel implements ActionListener, Runnable {
         draw(g);
     }
 
+
+    private void drawRoom(Graphics g) {
+        //Graphics g2 = g.create();
+
+        g.drawImage(roomImg, 0, 0, null);
+
+        //g2.dispose();
+    }
+
     private void draw(Graphics g) {
         if (checkWin()) {
             Graphics g2 = g.create();
@@ -106,6 +119,8 @@ public class Field extends JPanel implements ActionListener, Runnable {
             g2.drawString("You Win!", 200, Constant.GAME_HEIGHT / 2);
             g2.dispose();
         }
+
+        drawRoom(g);
 
         cannon.draw(g);
 

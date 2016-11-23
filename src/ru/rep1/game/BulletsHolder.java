@@ -11,6 +11,7 @@ import java.util.stream.Stream;
  */
 public class BulletsHolder implements Drawable {
     private Rectangle2D rect;
+    private Image bulletImage;
 
     private final int MAX = 7;
     private volatile int currentCount = MAX;
@@ -22,18 +23,16 @@ public class BulletsHolder implements Drawable {
     }
 
     private void initView() {
-        this.rect = new Rectangle2D.Double(Constant.GAME_WIDTH - 100, Constant.GAME_HEIGHT - 100, WIDTH, 20);
+        bulletImage = Utils.loadImage("bullet.png");
     }
 
     private void drawBullets(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        double x = rect.getX() + 10;
+        int x = 537;
         synchronized (BulletsHolder.class) {
             for (int i = 0; i < currentCount; i++) {
-                Line2D bulletView = new Line2D.Double(new Point2D.Double(x, rect.getY() + 2), new Point2D.Double(x, rect.getY() + 16));
-                x = x + (WIDTH / MAX) - 2;
-                g2.setColor(Color.GREEN);
-                g2.draw(bulletView);
+                x += 30;
+                g2.drawImage(bulletImage, x, 210, null);
             }
         }
         g2.dispose();
@@ -71,6 +70,7 @@ public class BulletsHolder implements Drawable {
     }
 
     private void reload() {
+        EventBus.getInstance().publish(Constant.Event.ON_RELOAD_START.name());
         new Thread(() -> {
 
             try {
@@ -82,6 +82,7 @@ public class BulletsHolder implements Drawable {
             synchronized (BulletsHolder.class) {
                 if (currentCount <= 0) {
                     currentCount = MAX;
+                    EventBus.getInstance().publish(Constant.Event.ON_RELOAD_END.name());
                 }
             }
         }).start();
@@ -90,14 +91,6 @@ public class BulletsHolder implements Drawable {
     @Override
     public void draw(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(Color.GREEN);
-
-        Stroke oldStroke = g2.getStroke();
-        g2.setStroke(new BasicStroke(2));
-        g2.draw(this.rect);
-        g2.setStroke(oldStroke);
-
-        g2.dispose();
 
         drawBullets(g);
 

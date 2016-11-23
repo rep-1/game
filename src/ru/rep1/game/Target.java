@@ -34,6 +34,7 @@ public class Target implements Drawable {
     @Override
     public void draw(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(color);
         shape.setFrame(new Point2D.Double(x, y), new Dimension((int)radius, (int)radius));
         g2.fill(shape);
@@ -50,7 +51,7 @@ public class Target implements Drawable {
             color = Color.PINK;
         }
         if(shotCount == 0) {
-            color = Color.WHITE;
+            color = Color.BLACK;
 
             speed = 0;
         }
@@ -85,5 +86,9 @@ public class Target implements Drawable {
 
     public void setY(double y) {
         this.y = y;
+    }
+
+    public double getRadius() {
+        return radius;
     }
 }
