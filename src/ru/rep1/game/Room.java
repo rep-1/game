@@ -31,8 +31,17 @@ public class Room extends JPanel implements Runnable {
         init();
     }
 
+    public synchronized void changeState(Constant.State state) {
+        System.out.println("Change state from " + this.state + " to " + state);
+        this.state = state;
+    }
+
+    public synchronized Constant.State getState() {
+        return state;
+    }
+
     public void init() {
-        state = Constant.State.INTRO;
+        changeState(Constant.State.INTRO);
 
         roomImg = Utils.loadImage("room.png");
         cannon = new Cannon();
@@ -72,14 +81,14 @@ public class Room extends JPanel implements Runnable {
         fireButton.setBounds(500, 10, 324, 92);
 
         EventBus.getInstance().subscribe(Constant.Event.ON_RELOAD_START.name(), () -> {
-            state = Constant.State.RELOAD;
+            changeState(Constant.State.RELOAD);
         });
         EventBus.getInstance().subscribe(Constant.Event.ON_RELOAD_END.name(), () -> {
-            state = Constant.State.PLAY;
+            changeState(Constant.State.PLAY);
         });
         EventBus.getInstance().subscribe(Constant.Event.ON_TARGET_IN_PLACE.name(), () -> {
-            if (state == Constant.State.OUTRO) {
-                state = Constant.State.FINISH;
+            if (getState() == Constant.State.OUTRO) {
+                changeState(Constant.State.FINISH);
                 EventBus.getInstance().publish(Constant.Event.ON_GAME_FINISH.name());
             } else {
                 introLatch.countDown();
@@ -101,7 +110,7 @@ public class Room extends JPanel implements Runnable {
 
         });
         EventBus.getInstance().subscribe(Constant.Event.ON_GAME_OUTRO.name(), () -> {
-            state = Constant.State.OUTRO;
+            changeState(Constant.State.OUTRO);
             Target winner = Stream.of(targets).filter((t) -> {
                 return !t.isShot();
             }).findFirst().orElse(null);
@@ -114,13 +123,13 @@ public class Room extends JPanel implements Runnable {
             }
         });
         EventBus.getInstance().subscribe(Constant.Event.ON_GAME_PLAY.name(), () -> {
-            state = Constant.State.PLAY;
+            changeState(Constant.State.PLAY);
         });
         EventBus.getInstance().publish(Constant.Event.ON_GAME_START.name());
     }
 
     public void initTargets() {
-        if (state == Constant.State.INTRO) {
+        if (getState() == Constant.State.INTRO) {
             Target t1 = new Target(252, 494, 50, 150);
             t1.setTrajectory(new Point2D[]{
                     new Point2D.Double(178, 480),
@@ -174,14 +183,15 @@ public class Room extends JPanel implements Runnable {
 
         drawRoom(g);
 
-        if (state == Constant.State.INTRO) {
+        final Constant.State tmpState = getState();
+        if (tmpState == Constant.State.INTRO) {
             drawIntro(g);
-        } else if (state == Constant.State.PLAY) {
+        } else if (tmpState == Constant.State.PLAY) {
             drawPlay(g);
-        } else if (state == Constant.State.RELOAD) {
+        } else if (tmpState == Constant.State.RELOAD) {
             drawPlay(g);
             drawReload(g);
-        } else if (state == Constant.State.OUTRO) {
+        } else if (tmpState == Constant.State.OUTRO || tmpState == Constant.State.FINISH) {
             drawOutro(g);
         }
     }
@@ -259,7 +269,7 @@ public class Room extends JPanel implements Runnable {
                 b.move();
             });
 
-            if (state == Constant.State.PLAY) {
+            if (getState() == Constant.State.PLAY) {
                 Stream.of(targets).forEach((t) -> {
                     t.move();
                 });
@@ -314,10 +324,12 @@ public class Room extends JPanel implements Runnable {
     }
 
     private void checkWin() {
-        if (Stream.of(targets).filter((t) -> {
-            return t.isShot();
-        }).count() >= 2) {
-            EventBus.getInstance().publish(Constant.Event.ON_GAME_OUTRO.name());
+        if(state == Constant.State.PLAY) {
+            if (Stream.of(targets).filter((t) -> {
+                return t.isShot();
+            }).count() >= 2) {
+                EventBus.getInstance().publish(Constant.Event.ON_GAME_OUTRO.name());
+            }
         }
     }
 }
