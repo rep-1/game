@@ -13,7 +13,7 @@ import java.util.TimerTask;
 public class Target implements Drawable {
     private volatile double x;
     private volatile double y;
-    private double radius = 20;
+    private double radius = 10;
     private Ellipse2D shape;
     private int shotCount = 2;
     private Color color = Color.RED;
@@ -38,11 +38,17 @@ public class Target implements Drawable {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(color);
-        shape.setFrame(new Point2D.Double(x, y), new Dimension((int)radius, (int)radius));
+        shape.setFrameFromCenter(x, y, x + radius, y + radius);
         g2.fill(shape);
 
         g2.setColor(Color.CYAN);
-        g2.fillOval((int)shape.getCenterX(), (int)shape.getCenterY(), 2, 2);
+        g2.fillOval((int)x, (int)y, 2, 2);
+
+        if(trajectory != null) {
+            if(orig != null) {
+                g2.drawLine((int)trajectory[0].getX(), (int)trajectory[0].getY(), (int)orig.getX(), (int)orig.getY());
+            }
+        }
 
         g2.dispose();
     }
@@ -81,10 +87,11 @@ public class Target implements Drawable {
     private Point2D[] trajectory;
     private volatile int tIndex;
     private Point2D orig;
+    private double trSpeed = 1;
     public void setTrajectory(Point2D[] t) {
         this.trajectory = t;
         tIndex = 0;
-        orig = new Point2D.Double(shape.getCenterX(), shape.getCenterY());
+        orig = new Point2D.Double(x, y);
     }
     public void moveByTrajectory() {
         if(trajectory == null) return;
@@ -98,13 +105,12 @@ public class Target implements Drawable {
 
                         double angle = Utils.getAngle(to, orig);
 
-                        x = x - 0.1 * Math.sin(Math.toRadians(angle));
-                        y = y - 0.1 * Math.cos(Math.toRadians(angle));
+                        x = x - trSpeed * Math.cos(Math.toRadians(angle));
+                        y = y + trSpeed * Math.sin(Math.toRadians(angle));
 
                         Point2D curr = new Point2D.Double(x, y);
 
-                        System.out.println(angle + ": " + Utils.getDistance(to, curr));
-                        if (Utils.getDistance(to, curr) < 1) {
+                        if (Utils.getDistance(to, curr) < 2D) {
                             tIndex++;
                             orig = to;
                         }

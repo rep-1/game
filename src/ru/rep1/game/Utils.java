@@ -24,14 +24,11 @@ public class Utils {
         return image.getImage();
     }
 
-    public static double getAngle(Point2D target, Point2D orig) {
-        double angle = (double) Math.toDegrees(Math.atan2(target.getY() - orig.getY(), target.getX() - orig.getX()));
-
-        if(angle < 0){
-            angle += 360;
-        }
-
-        return angle;
+    public static double getAngle(Point2D p1, Point2D p2) {
+        final double deltaY = (p1.getY() - p2.getY());
+        final double deltaX = (p2.getX() - p1.getX());
+        final double result = Math.toDegrees(Math.atan2(deltaY, deltaX));
+        return (result < 0) ? (360d + result) : result;
     }
 
     public static double getDistance(Point2D target, Point2D orig) {

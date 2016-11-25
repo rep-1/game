@@ -78,7 +78,9 @@ public class Room extends JPanel implements Runnable {
         if(state == Constant.State.INTRO) {
             Target t1 = new Target(252, 494, 252, 252);
             t1.setTrajectory(new Point2D[]{
-                    new Point2D.Double(145, 366)});
+                    new Point2D.Double(178, 480),
+                    new Point2D.Double(145, 366),
+                    new Point2D.Double(80, 367)});
             targets = new Target[]{
                     t1,
                     new Target(283, 494, 283, 283),
