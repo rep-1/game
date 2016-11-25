@@ -56,7 +56,6 @@ public class Cannon implements Drawable {
     }
 
     private void controlAngle() {
-        System.out.println(angle);
         if (angle > 30) {
             angle = 30;
         }

@@ -90,7 +90,7 @@ public class Target implements Drawable {
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                synchronized (Target.class) {
+                synchronized (this) {
                     if (tIndex < trajectory.length) {
                         Point2D to = trajectory[tIndex];
 
@@ -105,8 +105,9 @@ public class Target implements Drawable {
                             tIndex++;
                             orig = to;
                         }
+                    } else {
+                        EventBus.getInstance().publish(Constant.Event.ON_TARGET_IN_PLACE.name());
                     }
-                    EventBus.getInstance().publish(Constant.Event.ON_TARGET_IN_PLACE.name());
                 }
             }
         }, 0, 10);

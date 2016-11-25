@@ -10,7 +10,9 @@ public class Constant {
     public enum State {
         INTRO,
         PLAY,
-        RELOAD
+        RELOAD,
+        OUTRO,
+        FINISH
     }
 
     public enum Event {
@@ -18,7 +20,9 @@ public class Constant {
         ON_GAME_PLAY,
         ON_RELOAD_START,
         ON_RELOAD_END,
-        ON_TARGET_IN_PLACE
+        ON_TARGET_IN_PLACE,
+        ON_GAME_OUTRO,
+        ON_GAME_FINISH
     }
 
 }
