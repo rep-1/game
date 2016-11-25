@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
 /**
@@ -23,6 +24,8 @@ public class Room extends JPanel implements Runnable {
     private BulletsHolder bulletsHolder;
     private Rectangle2D[] walls;
     private Constant.State state;
+
+    private CountDownLatch introLatch;
 
     public Room() {
         init();
@@ -70,26 +73,50 @@ public class Room extends JPanel implements Runnable {
 
         EventBus.getInstance().subscribe(Constant.Event.ON_RELOAD_START.name(), () -> {state = Constant.State.RELOAD;});
         EventBus.getInstance().subscribe(Constant.Event.ON_RELOAD_END.name(), () -> {state = Constant.State.PLAY;});
-        EventBus.getInstance().subscribe(Constant.Event.ON_GAME_START.name(), () -> {targets[0].moveByTrajectory();});
+        EventBus.getInstance().subscribe(Constant.Event.ON_TARGET_IN_PLACE.name(), () -> {introLatch.countDown();});
+        EventBus.getInstance().subscribe(Constant.Event.ON_GAME_START.name(), () -> {
+            introLatch = new CountDownLatch(3);
+            targets[0].moveByTrajectory();
+            targets[1].moveByTrajectory();
+            targets[2].moveByTrajectory();
+            try {
+                introLatch.await();
+                EventBus.getInstance().publish(Constant.Event.ON_GAME_PLAY.name());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        EventBus.getInstance().subscribe(Constant.Event.ON_GAME_PLAY.name(), () -> {
+            state = Constant.State.PLAY;
+        });
         EventBus.getInstance().publish(Constant.Event.ON_GAME_START.name());
     }
 
     public void initTargets() {
         if(state == Constant.State.INTRO) {
-            Target t1 = new Target(252, 494, 252, 252);
+            Target t1 = new Target(252, 494, 50, 175);
             t1.setTrajectory(new Point2D[]{
                     new Point2D.Double(178, 480),
                     new Point2D.Double(145, 366),
                     new Point2D.Double(80, 367)});
+            Target t2 = new Target(283, 494, 185, 250);
+            t2.setTrajectory(new Point2D[]{
+                    new Point2D.Double(183, 480),
+                    new Point2D.Double(233, 366),
+                    new Point2D.Double(336, 364)});
+            Target t3 = new Target(318, 494, 260, 318);
+            t3.setTrajectory(new Point2D[]{
+                    new Point2D.Double(183, 480),
+                    new Point2D.Double(233, 366)});
             targets = new Target[]{
                     t1,
-                    new Target(283, 494, 283, 283),
-                    new Target(318, 494, 318, 318)};
+                    t2,
+                    t3};
         }else if(state == Constant.State.PLAY) {
-            targets = new Target[]{
-                    new Target(Utils.getRandomNumberInRange(37, 160), 358, 37, 160),
-                    new Target(Utils.getRandomNumberInRange(170, 253), 358, 170, 253),
-                    new Target(Utils.getRandomNumberInRange(270, 350), 358, 270, 350)};
+            //targets = new Target[]{
+            //        new Target(Utils.getRandomNumberInRange(37, 160), 358, 37, 160),
+            //        new Target(Utils.getRandomNumberInRange(170, 253), 358, 170, 253),
+            //        new Target(Utils.getRandomNumberInRange(270, 350), 358, 270, 350)};
         }
     }
 
@@ -147,8 +174,6 @@ public class Room extends JPanel implements Runnable {
     public void drawIntro(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        g2.fillOval(145, 366, 2, 2);
 
         Stream.of(targets).forEach((t) -> {
             t.draw(g);

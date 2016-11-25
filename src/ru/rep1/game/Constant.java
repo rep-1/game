@@ -15,8 +15,10 @@ public class Constant {
 
     public enum Event {
         ON_GAME_START,
+        ON_GAME_PLAY,
         ON_RELOAD_START,
-        ON_RELOAD_END
+        ON_RELOAD_END,
+        ON_TARGET_IN_PLACE
     }
 
 }

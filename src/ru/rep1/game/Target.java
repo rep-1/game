@@ -41,15 +41,6 @@ public class Target implements Drawable {
         shape.setFrameFromCenter(x, y, x + radius, y + radius);
         g2.fill(shape);
 
-        g2.setColor(Color.CYAN);
-        g2.fillOval((int)x, (int)y, 2, 2);
-
-        if(trajectory != null) {
-            if(orig != null) {
-                g2.drawLine((int)trajectory[0].getX(), (int)trajectory[0].getY(), (int)orig.getX(), (int)orig.getY());
-            }
-        }
-
         g2.dispose();
     }
 
@@ -115,6 +106,7 @@ public class Target implements Drawable {
                             orig = to;
                         }
                     }
+                    EventBus.getInstance().publish(Constant.Event.ON_TARGET_IN_PLACE.name());
                 }
             }
         }, 0, 10);
