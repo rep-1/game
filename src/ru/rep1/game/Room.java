@@ -3,6 +3,7 @@ package ru.rep1.game;
 import javax.print.DocFlavor;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,12 +29,11 @@ public class Room extends JPanel implements Runnable {
     }
 
     public void init() {
+        state = Constant.State.INTRO;
+
         roomImg = Utils.loadImage("room.png");
         cannon = new Cannon();
-        targets = new Target[]{
-                new Target(Utils.getRandomNumberInRange(37, 160), 358, 37, 160),
-                new Target(Utils.getRandomNumberInRange(170, 253), 358, 170, 253),
-                new Target(Utils.getRandomNumberInRange(270, 368), 358, 270, 350)};
+        initTargets();
         bullets = new ArrayList<>();
         bulletsHolder = new BulletsHolder();
         walls = new Rectangle2D[]{new Rectangle2D.Double(0, 0, 85, 331),
@@ -68,10 +68,27 @@ public class Room extends JPanel implements Runnable {
         add(fireButton);
         fireButton.setBounds(500, 10, 324, 92);
 
-        state = Constant.State.PLAY;
-
         EventBus.getInstance().subscribe(Constant.Event.ON_RELOAD_START.name(), () -> {state = Constant.State.RELOAD;});
         EventBus.getInstance().subscribe(Constant.Event.ON_RELOAD_END.name(), () -> {state = Constant.State.PLAY;});
+        EventBus.getInstance().subscribe(Constant.Event.ON_GAME_START.name(), () -> {targets[0].moveByTrajectory();});
+        EventBus.getInstance().publish(Constant.Event.ON_GAME_START.name());
+    }
+
+    public void initTargets() {
+        if(state == Constant.State.INTRO) {
+            Target t1 = new Target(252, 494, 252, 252);
+            t1.setTrajectory(new Point2D[]{
+                    new Point2D.Double(145, 366)});
+            targets = new Target[]{
+                    t1,
+                    new Target(283, 494, 283, 283),
+                    new Target(318, 494, 318, 318)};
+        }else if(state == Constant.State.PLAY) {
+            targets = new Target[]{
+                    new Target(Utils.getRandomNumberInRange(37, 160), 358, 37, 160),
+                    new Target(Utils.getRandomNumberInRange(170, 253), 358, 170, 253),
+                    new Target(Utils.getRandomNumberInRange(270, 350), 358, 270, 350)};
+        }
     }
 
     private void fire() {
@@ -104,23 +121,43 @@ public class Room extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        draw(g);
+        drawRoom(g);
+
+        if(state == Constant.State.INTRO) {
+            drawIntro(g);
+        } else if(state == Constant.State.PLAY){
+            drawPlay(g);
+        } else if(state == Constant.State.RELOAD) {
+            drawPlay(g);
+            drawReload(g);
+        }
     }
 
-    public void draw(Graphics g) {
+    public void drawRoom(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g.drawImage(roomImg, 0, 0, null);
 
-        if(state == Constant.State.RELOAD) {
-            Graphics2D g21 = (Graphics2D)g2.create();
-            g21.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g21.setColor(Color.RED);
-            g21.setFont(new Font(Font.MONOSPACED, Font.BOLD, 40));
-            g21.drawString("ПЕРЕЗАРЯДКА!", 159, 239);
-            g21.dispose();
-        }
+        g2.dispose();
+    }
+
+    public void drawIntro(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2.fillOval(145, 366, 2, 2);
+
+        Stream.of(targets).forEach((t) -> {
+            t.draw(g);
+        });
+
+        g2.dispose();
+    }
+
+    public void drawPlay(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         cannon.draw(g);
 
@@ -134,7 +171,18 @@ public class Room extends JPanel implements Runnable {
 
         bulletsHolder.draw(g);
 
+        g2.dispose();
+
         Toolkit.getDefaultToolkit().sync();
+    }
+
+    public void drawReload(Graphics g) {
+        Graphics2D g21 = (Graphics2D)g.create();
+        g21.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g21.setColor(Color.RED);
+        g21.setFont(new Font(Font.MONOSPACED, Font.BOLD, 40));
+        g21.drawString("ПЕРЕЗАРЯДКА!", 159, 239);
+        g21.dispose();
     }
 
     public void loop() {
@@ -149,9 +197,11 @@ public class Room extends JPanel implements Runnable {
                 b.move();
             });
 
-            Stream.of(targets).forEach((t) -> {
-                t.move();
-            });
+            if(state == Constant.State.PLAY) {
+                Stream.of(targets).forEach((t) -> {
+                    t.move();
+                });
+            }
 
             repaint();
 

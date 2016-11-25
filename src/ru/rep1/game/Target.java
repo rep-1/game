@@ -4,13 +4,15 @@ import java.awt.*;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by lshi on 17.11.2016.
  */
 public class Target implements Drawable {
-    private double x;
-    private double y;
+    private volatile double x;
+    private volatile double y;
     private double radius = 20;
     private Ellipse2D shape;
     private int shotCount = 2;
@@ -38,6 +40,10 @@ public class Target implements Drawable {
         g2.setColor(color);
         shape.setFrame(new Point2D.Double(x, y), new Dimension((int)radius, (int)radius));
         g2.fill(shape);
+
+        g2.setColor(Color.CYAN);
+        g2.fillOval((int)shape.getCenterX(), (int)shape.getCenterY(), 2, 2);
+
         g2.dispose();
     }
 
@@ -70,6 +76,42 @@ public class Target implements Drawable {
         if(x <  from) {
             speed = -speed;
         }
+    }
+
+    private Point2D[] trajectory;
+    private volatile int tIndex;
+    private Point2D orig;
+    public void setTrajectory(Point2D[] t) {
+        this.trajectory = t;
+        tIndex = 0;
+        orig = new Point2D.Double(shape.getCenterX(), shape.getCenterY());
+    }
+    public void moveByTrajectory() {
+        if(trajectory == null) return;
+
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                synchronized (Target.class) {
+                    if (tIndex < trajectory.length) {
+                        Point2D to = trajectory[tIndex];
+
+                        double angle = Utils.getAngle(to, orig);
+
+                        x = x - 0.1 * Math.sin(Math.toRadians(angle));
+                        y = y - 0.1 * Math.cos(Math.toRadians(angle));
+
+                        Point2D curr = new Point2D.Double(x, y);
+
+                        System.out.println(angle + ": " + Utils.getDistance(to, curr));
+                        if (Utils.getDistance(to, curr) < 1) {
+                            tIndex++;
+                            orig = to;
+                        }
+                    }
+                }
+            }
+        }, 0, 10);
     }
 
     public double getX() {
