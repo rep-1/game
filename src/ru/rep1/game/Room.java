@@ -116,7 +116,8 @@ public class Room extends JPanel implements Runnable {
             }).findFirst().orElse(null);
             if (winner != null) {
                 winner.setTrajectory(new Point2D[]{new Point2D.Double(139, 156),
-                        new Point2D.Double(77, 114)});
+                        new Point2D.Double(86, 114)});
+                winner.setTrajectorySpeed(0.6D);
                 winner.moveByTrajectory();
             } else {
                 System.out.println("Winner not found");
@@ -143,7 +144,7 @@ public class Room extends JPanel implements Runnable {
             Target t3 = new Target(318, 494, 160, 257);
             t3.setTrajectory(new Point2D[]{
                     new Point2D.Double(183, 480),
-                    new Point2D.Double(233, 366)});
+                    new Point2D.Double(233, 398)});
             targets = new Target[]{
                     t1,
                     t2,

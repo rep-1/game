@@ -79,6 +79,9 @@ public class Target implements Drawable {
     private volatile int tIndex;
     private Point2D orig;
     private double trSpeed = 1;
+    public void setTrajectorySpeed(double speed) {
+        trSpeed = speed;
+    }
     public void setTrajectory(Point2D[] t) {
         this.trajectory = t;
         tIndex = 0;
