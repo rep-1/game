@@ -115,7 +115,9 @@ public class Room extends JPanel implements Runnable {
                 return !t.isShot();
             }).findFirst().orElse(null);
             if (winner != null) {
-                winner.setTrajectory(new Point2D[]{new Point2D.Double(139, 156),
+                winner.setTrajectory(new Point2D[]{
+                        new Point2D.Double(268, 350),
+                        new Point2D.Double(139, 156),
                         new Point2D.Double(86, 114)});
                 winner.setTrajectorySpeed(0.6D);
                 winner.moveByTrajectory();
@@ -221,6 +223,8 @@ public class Room extends JPanel implements Runnable {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        cannon.draw(g);
+
         Stream.of(targets).forEach((t) -> {
             t.draw(g);
         });
@@ -264,7 +268,10 @@ public class Room extends JPanel implements Runnable {
         long sleep;
 
         while (true) {
-            detectCollisions();
+
+            if(state == Constant.State.PLAY) {
+                detectCollisions();
+            }
 
             bullets.stream().forEach((b) -> {
                 b.move();
