@@ -1,5 +1,7 @@
 package ru.rep1.game;
 
+import ru.rep1.game.black.Lab;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -12,7 +14,7 @@ public class GameFrame extends JFrame {
     }
 
     private void initUI() {
-        Room room = new Room();
+        Lab room = new Lab();
         add(room);
 
         setResizable(false);

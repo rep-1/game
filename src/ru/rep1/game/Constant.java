@@ -4,8 +4,12 @@ package ru.rep1.game;
  * Created by lshi on 17.11.2016.
  */
 public class Constant {
-    public static final int GAME_WIDTH = 860;
-    public static final int GAME_HEIGHT = 624;
+    public static final int ORIGINAL_WIDTH = 1920;
+    public static final int ORIGINAL_HEIGHT = 1080;
+    public static final int GAME_WIDTH = 1600;
+    public static final int GAME_HEIGHT = 900;
+    public static final double GLOBAL_SCALE = ORIGINAL_WIDTH / (double)GAME_WIDTH;
+    public static final double GLOBAL_SCALE_REV = 1.0D/ GLOBAL_SCALE;
 
     public enum State {
         INTRO,

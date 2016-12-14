@@ -15,8 +15,12 @@ public class GameButton extends JLabel {
     private Runnable onClick;
 
     public GameButton(String imageSrc, Runnable action, Runnable onClick) {
+        this(Utils.loadImage(imageSrc), action, onClick);
+    }
+
+    public GameButton(Image imageSrc, Runnable action, Runnable onClick) {
         super();
-        this.image = Utils.loadImage(imageSrc);
+        this.image = imageSrc;
         if(action != null) {
             this.bp = new ButtonPress(action);
         }
