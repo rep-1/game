@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,13 +14,15 @@ import java.util.TimerTask;
 public class Target implements Drawable {
     private volatile double x;
     private volatile double y;
-    private double radius = 10;
+    private double radius = 10D;
     private Ellipse2D shape;
     private int shotCount = 2;
-    private Color color = Color.RED;
-    private int speed = 3;
+    private Color color = new Color(254, 118, 130);
+    private double speed = 3D;
     private double from;
     private double to;
+
+    private Random r = new Random();
 
     public Target() {
         shape = new Ellipse2D.Double();
@@ -37,9 +40,10 @@ public class Target implements Drawable {
     public void draw(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setStroke(new BasicStroke(3));
         g2.setColor(color);
         shape.setFrameFromCenter(x, y, x + radius, y + radius);
-        g2.fill(shape);
+        g2.draw(shape);
 
         g2.dispose();
     }
@@ -65,12 +69,12 @@ public class Target implements Drawable {
     }
 
     public void move() {
-        x += speed;
+        y += speed + r.nextGaussian();
 
-        if(x > to) {
+        if(y > to) {
             speed = -speed;
         }
-        if(x <  from) {
+        if(y <  from) {
             speed = -speed;
         }
     }

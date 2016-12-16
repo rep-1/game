@@ -1,5 +1,6 @@
 package ru.rep1.game.black;
 
+import ru.rep1.game.ButtonPress;
 import ru.rep1.game.Constant;
 import ru.rep1.game.Utils;
 
@@ -16,6 +17,11 @@ public class Button extends JLabel {
     private final Image imageDefault;
     private final Image imagePressed;
 
+    private Runnable onPress;
+    private Runnable onClick;
+
+    private ButtonPress bp;
+
     public Button(String imgDefault, String imgPressed) {
         super();
         imageDefault = Utils.loadImage(imgDefault);
@@ -24,15 +30,24 @@ public class Button extends JLabel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                if (onClick != null) {
+                    onClick.run();
+                }
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
                 changeState(State.PRESSED);
+                if (bp != null) {
+                    bp.mousePressed(e);
+                }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (bp != null) {
+                    bp.mouseReleased(e);
+                }
                 changeState(State.DEFAULT);
             }
         });
@@ -52,14 +67,33 @@ public class Button extends JLabel {
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY));
+        g2.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
 
-        if(state == State.PRESSED) {
+        if (state == State.PRESSED) {
             g2.drawImage(imagePressed, 0, 0, getWidth(), getHeight(), null);
         } else {
             g2.drawImage(imageDefault, 0, 0, getWidth(), getHeight(), null);
         }
 
         g2.dispose();
+    }
+
+    public Runnable getOnPress() {
+        return onPress;
+    }
+
+    public void setOnPress(Runnable onPress) {
+        this.onPress = onPress;
+        if (this.onPress != null) {
+            this.bp = new ButtonPress(onPress);
+        }
+    }
+
+    public Runnable getOnClick() {
+        return onClick;
+    }
+
+    public void setOnClick(Runnable onClick) {
+        this.onClick = onClick;
     }
 }

@@ -19,7 +19,7 @@ public class Bullet implements Drawable {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(Color.GREEN);
+        g2.setColor(new Color(255, 253, 205));
         g2.fillOval((int)x, (int)y, (int)diam, (int)diam);
 
         g2.dispose();
