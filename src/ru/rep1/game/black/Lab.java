@@ -19,6 +19,7 @@ public class Lab extends JPanel implements Runnable {
     private Image roomImg;
     private Cannon cannon;
     private Target[] targets;
+    private Temperature temperature;
     private java.util.List<Bullet> bullets;
     private Rectangle2D[] walls;
     private volatile Constant.State state;
@@ -51,6 +52,12 @@ public class Lab extends JPanel implements Runnable {
         initCannon();
         initBullets();
         initTargets();
+        initTemperature();
+    }
+
+    private void initTemperature() {
+        this.temperature = new Temperature();
+
     }
 
     private void initWalls() {
@@ -177,6 +184,8 @@ public class Lab extends JPanel implements Runnable {
         drawRoom(g);
 
         cannon.draw(g);
+
+        temperature.draw(g);
 
         bullets.stream().forEach((b) -> {
             b.draw(g);
