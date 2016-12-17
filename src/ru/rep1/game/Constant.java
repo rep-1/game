@@ -11,6 +11,9 @@ public class Constant {
     public static final double GLOBAL_SCALE = ORIGINAL_WIDTH / (double)GAME_WIDTH;
     public static final double GLOBAL_SCALE_REV = 1.0D/ GLOBAL_SCALE;
 
+    public static final long COOLING_SPEED = 1000;
+    public static final double TARGET_SPEED = 3D;
+
     public enum State {
         INTRO,
         PLAY,

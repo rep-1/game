@@ -18,7 +18,7 @@ public class Target implements Drawable {
     private Ellipse2D shape;
     private int shotCount = 2;
     private Color color = new Color(254, 118, 130);
-    private double speed = 3D;
+    private double speed = Constant.TARGET_SPEED;
     private double from;
     private double to;
 
@@ -69,12 +69,14 @@ public class Target implements Drawable {
     }
 
     public void move() {
-        y += speed + r.nextGaussian();
+        y += speed + 0.9 * Math.abs((r.nextGaussian()));
 
         if(y > to) {
+            y = to - 10;
             speed = -speed;
         }
         if(y <  from) {
+            y = y + 10;
             speed = -speed;
         }
     }
@@ -94,7 +96,8 @@ public class Target implements Drawable {
     public void moveByTrajectory() {
         if(trajectory == null) return;
 
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 synchronized (this) {
@@ -114,6 +117,8 @@ public class Target implements Drawable {
                         }
                     } else {
                         EventBus.getInstance().publish(Constant.Event.ON_TARGET_IN_PLACE.name());
+                        timer.cancel();
+                        timer.purge();
                     }
                 }
             }

@@ -4,9 +4,11 @@ import ru.rep1.game.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
 import static ru.rep1.game.Scale.*;
@@ -20,9 +22,12 @@ public class Lab extends JPanel implements Runnable {
     private Cannon cannon;
     private Target[] targets;
     private Temperature temperature;
+    private TempController tempController;
     private java.util.List<Bullet> bullets;
     private Rectangle2D[] walls;
     private volatile Constant.State state;
+
+    private CountDownLatch introLatch;
 
     public Lab() {
         init();
@@ -38,7 +43,7 @@ public class Lab extends JPanel implements Runnable {
     }
 
     public void init() {
-        changeState(Constant.State.PLAY);
+        changeState(Constant.State.INTRO);
 
         setBackground(Color.BLACK);
         setPreferredSize(new Dimension(Constant.GAME_WIDTH, Constant.GAME_HEIGHT));
@@ -53,11 +58,65 @@ public class Lab extends JPanel implements Runnable {
         initBullets();
         initTargets();
         initTemperature();
+
+        initEvents();
+
+        EventBus.getInstance().subscribe(Constant.Event.ON_GAME_PLAY.name(), () -> {
+            changeState(Constant.State.PLAY);
+        });
+        EventBus.getInstance().publish(Constant.Event.ON_GAME_START.name());
+    }
+
+    private void initEvents() {
+        introLatch = new CountDownLatch(3);
+        EventBus.getInstance().subscribe(Constant.Event.ON_GAME_START.name(), () -> {
+            new Thread(() -> {
+                try {
+                    targets[0].moveByTrajectory();
+                    targets[1].moveByTrajectory();
+                    targets[2].moveByTrajectory();
+                    introLatch.await();
+                    EventBus.getInstance().publish(Constant.Event.ON_GAME_PLAY.name());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
+        });
+
+        EventBus.getInstance().subscribe(Constant.Event.ON_TARGET_IN_PLACE.name(), () -> {
+            if (getState() == Constant.State.OUTRO) {
+                changeState(Constant.State.FINISH);
+                EventBus.getInstance().publish(Constant.Event.ON_GAME_FINISH.name());
+            } else if (getState() == Constant.State.INTRO) {
+                introLatch.countDown();
+            }
+        });
+
+        EventBus.getInstance().subscribe(Constant.Event.ON_GAME_OUTRO.name(), () -> {
+            changeState(Constant.State.OUTRO);
+            Target winner = Stream.of(targets).filter((t) -> {
+                return !t.isShot();
+            }).findFirst().orElse(null);
+            if (winner != null) {
+                winner.setTrajectory(new Point2D[]{
+                        $(new Point2D.Double(1045, 422)),
+                        $(new Point2D.Double(815, 440)),
+                        $(new Point2D.Double(822, 792)),
+                        $(new Point2D.Double(1232, 792))});
+                winner.setTrajectorySpeed(0.6D);
+                winner.moveByTrajectory();
+            } else {
+                System.out.println("Winner not found");
+            }
+        });
     }
 
     private void initTemperature() {
         this.temperature = new Temperature();
-
+        this.tempController = new TempController();
+        this.tempController.setTemperature(temperature);
+        this.tempController.start();
     }
 
     private void initWalls() {
@@ -74,8 +133,31 @@ public class Lab extends JPanel implements Runnable {
     }
 
     private void initTargets() {
-        Target t1 = new Target($(1175), $(342), $(309), $(418));
-        targets = new Target[]{t1};
+        Target t1 = new Target($(1332), $(426), $(221), $(354));
+        if (getState() == Constant.State.INTRO) {
+            t1.setTrajectory(new Point2D[]{
+                    $(new Point2D.Double(1332, 426)),
+                    $(new Point2D.Double(1232, 433)),
+                    $(new Point2D.Double(1180, 339))});
+        }
+
+        Target t2 = new Target($(1382), $(403), $(385), $(461));
+        if (getState() == Constant.State.INTRO) {
+            t2.setTrajectory(new Point2D[]{
+                    $(new Point2D.Double(1382, 403)),
+                    $(new Point2D.Double(1232, 433)),
+                    $(new Point2D.Double(1170, 462))});
+        }
+
+        Target t3 = new Target($(1418), $(453), $(482), $(588));
+        if (getState() == Constant.State.INTRO) {
+            t3.setTrajectory(new Point2D[]{
+                    $(new Point2D.Double(1418, 453)),
+                    $(new Point2D.Double(1232, 433)),
+                    $(new Point2D.Double(1132, 515))});
+        }
+
+        targets = new Target[]{t1, t2, t3};
     }
 
     private void initBullets() {
@@ -96,7 +178,7 @@ public class Lab extends JPanel implements Runnable {
         add(leftButton);
         leftButton.setBounds(leftBounds.getBounds());
         leftButton.setOnPress(() -> {
-            cannon.turnLeft();
+            cannon.turnRight();
             repaint();
         });
 
@@ -105,7 +187,7 @@ public class Lab extends JPanel implements Runnable {
         add(rightButton);
         rightButton.setBounds(rightBounds.getBounds());
         rightButton.setOnPress(() -> {
-            cannon.turnRight();
+            cannon.turnLeft();
             repaint();
         });
     }
@@ -119,12 +201,15 @@ public class Lab extends JPanel implements Runnable {
     }
 
     private void fire() {
-        Bullet bullet = new Bullet();
-        bullet.setX((int) cannon.getFirePosition().getX());
-        bullet.setY((int) cannon.getFirePosition().getY());
-        bullet.setAngle(90 - cannon.getAngle());
-        synchronized (bullets) {
-            bullets.add(bullet);
+        if(!tempController.isOverheat()) {
+            Bullet bullet = new Bullet();
+            bullet.setX((int) cannon.getFirePosition().getX());
+            bullet.setY((int) cannon.getFirePosition().getY());
+            bullet.setAngle(90 - cannon.getAngle());
+            synchronized (bullets) {
+                bullets.add(bullet);
+            }
+            this.temperature.inc();
         }
         repaint();
     }
@@ -148,7 +233,7 @@ public class Lab extends JPanel implements Runnable {
         long sleep;
 
         while (true) {
-            if(state == Constant.State.PLAY) {
+            if (state == Constant.State.PLAY) {
                 detectCollisions();
             }
 
@@ -156,9 +241,11 @@ public class Lab extends JPanel implements Runnable {
                 b.move();
             });
 
-            Stream.of(targets).forEach((t) -> {
-                t.move();
-            });
+            if (state == Constant.State.PLAY) {
+                Stream.of(targets).forEach((t) -> {
+                    t.move();
+                });
+            }
 
             repaint();
 
@@ -187,13 +274,53 @@ public class Lab extends JPanel implements Runnable {
 
         temperature.draw(g);
 
-        bullets.stream().forEach((b) -> {
-            b.draw(g);
-        });
+        final Constant.State tmpState = getState();
+        if (tmpState == Constant.State.INTRO) {
+            drawIntro(g);
+        } else if (tmpState == Constant.State.PLAY) {
+            drawPlay(g);
+        } else if (tmpState == Constant.State.OUTRO || tmpState == Constant.State.FINISH) {
+            drawOutro(g);
+        }
+
+        Toolkit.getDefaultToolkit().sync();
+    }
+
+    private void drawIntro(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         Stream.of(targets).forEach((t) -> {
             t.draw(g);
         });
+
+        g2.dispose();
+    }
+
+    public void drawPlay(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Stream.of(targets).forEach((t) -> {
+            t.draw(g);
+        });
+
+        bullets.stream().forEach((b) -> {
+            b.draw(g);
+        });
+
+        g2.dispose();
+    }
+
+    public void drawOutro(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Stream.of(targets).forEach((t) -> {
+            t.draw(g);
+        });
+
+        g2.dispose();
     }
 
 

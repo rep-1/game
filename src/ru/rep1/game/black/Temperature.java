@@ -16,8 +16,8 @@ import java.awt.geom.Rectangle2D;
 public class Temperature implements Drawable {
     private Pair<Image, Rectangle2D>[] parts;
     private volatile byte state;
-    public final int MIN_STATE = 0;
-    public final int MAX_STATE = 6;
+    public final static int MIN_STATE = 0;
+    public final static int MAX_STATE = 6;
 
     public Temperature() {
         init();

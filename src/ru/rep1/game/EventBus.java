@@ -36,6 +36,7 @@ public class EventBus {
     }
 
     public void publish(String message) {
+        System.out.println("Get event " + message);
         if (listeners.containsKey(message)) {
             for (Runnable actor : listeners.get(message)) {
                 actor.run();
