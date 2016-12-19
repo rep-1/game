@@ -23,6 +23,7 @@ public class Lab extends JPanel implements Runnable {
     private Target[] targets;
     private Temperature temperature;
     private TempController tempController;
+    private BulletsHolder bulletsHolder;
     private java.util.List<Bullet> bullets;
     private Rectangle2D[] walls;
     private volatile Constant.State state;
@@ -55,6 +56,7 @@ public class Lab extends JPanel implements Runnable {
         initFireButton();
         initWalls();
         initCannon();
+        initBulletsHolder();
         initBullets();
         initTargets();
         initTemperature();
@@ -65,6 +67,10 @@ public class Lab extends JPanel implements Runnable {
             changeState(Constant.State.PLAY);
         });
         EventBus.getInstance().publish(Constant.Event.ON_GAME_START.name());
+    }
+
+    private void initBulletsHolder() {
+        this.bulletsHolder = new BulletsHolder();
     }
 
     private void initEvents() {
@@ -273,6 +279,8 @@ public class Lab extends JPanel implements Runnable {
         cannon.draw(g);
 
         temperature.draw(g);
+
+        bulletsHolder.draw(g);
 
         final Constant.State tmpState = getState();
         if (tmpState == Constant.State.INTRO) {
