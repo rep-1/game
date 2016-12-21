@@ -108,8 +108,7 @@ public class Lab extends JPanel implements Runnable {
                 winner.setTrajectory(new Point2D[]{
                         $(new Point2D.Double(1045, 422)),
                         $(new Point2D.Double(815, 440)),
-                        $(new Point2D.Double(822, 792)),
-                        $(new Point2D.Double(1232, 792))});
+                        $(new Point2D.Double(813, 508))});
                 winner.setTrajectorySpeed(0.6D);
                 winner.moveByTrajectory();
             } else {
@@ -207,7 +206,8 @@ public class Lab extends JPanel implements Runnable {
     }
 
     private void fire() {
-        if(!tempController.isOverheat()) {
+        if(!tempController.isOverheat() && bulletsHolder.getBullet()) {
+            EventBus.getInstance().publish(Constant.Event.ON_FIRE.name());
             Bullet bullet = new Bullet();
             bullet.setX((int) cannon.getFirePosition().getX());
             bullet.setY((int) cannon.getFirePosition().getY());
@@ -248,7 +248,7 @@ public class Lab extends JPanel implements Runnable {
             });
 
             if (state == Constant.State.PLAY) {
-                Stream.of(targets).forEach((t) -> {
+                Stream.of(targets).filter(t -> !t.isShot()).forEach((t) -> {
                     t.move();
                 });
             }

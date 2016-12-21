@@ -5,6 +5,10 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.stream.Stream;
+
+import static ru.rep1.game.Constant.BULLETHOLDER_MAX;
+import static ru.rep1.game.Constant.BULLETHOLDER_RELOAD;
+import static ru.rep1.game.Constant.BULLETHOLDER_WAIT;
 import static ru.rep1.game.Scale.*;
 
 /**
@@ -12,10 +16,10 @@ import static ru.rep1.game.Scale.*;
  */
 public class BulletsHolder implements Drawable {
     private Rectangle2D rect;
-    private Image bulletImage;
+    private Image[] bulletImage;
     private Image magazineImage;
 
-    private final int MAX = 7;
+    private final int MAX = BULLETHOLDER_MAX;
     private volatile int currentCount = MAX;
 
     private final int WIDTH = 70;
@@ -26,18 +30,20 @@ public class BulletsHolder implements Drawable {
 
     private void initView() {
 
-        bulletImage = Utils.loadImage("bullet.png");
+        bulletImage = new Image[]{
+                Utils.loadImage("black/bullets_holder/bullets_0.png"),
+                Utils.loadImage("black/bullets_holder/bullets_1.png"),
+                Utils.loadImage("black/bullets_holder/bullets_2.png"),
+                Utils.loadImage("black/bullets_holder/bullets_3.png"),
+                Utils.loadImage("black/bullets_holder/bullets_full.png")};
         magazineImage = Utils.loadImage("black/bullets_holder/magazine.png");;
     }
 
     private void drawBullets(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        int x = 537;
         synchronized (BulletsHolder.class) {
-            for (int i = 0; i < currentCount; i++) {
-                x += 30;
-                g2.drawImage(bulletImage, x, 210, null);
-            }
+            Image bullets = bulletImage[Math.min((int)Math.ceil(4 * (currentCount / (double)MAX)), 4)];
+            g2.drawImage(bullets, (int)$(1600), (int)$(572), (int)$(92), (int)$(67), null);
         }
         g2.dispose();
     }
@@ -54,7 +60,7 @@ public class BulletsHolder implements Drawable {
         g2.dispose();
     }
 
-    private volatile boolean flag;
+    private volatile boolean flag = true;
     private volatile boolean working;
 
     public boolean getBullet() {
@@ -63,7 +69,7 @@ public class BulletsHolder implements Drawable {
                 working = true;
                 new Thread(() -> {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(BULLETHOLDER_WAIT);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -90,7 +96,7 @@ public class BulletsHolder implements Drawable {
         new Thread(() -> {
 
             try {
-                Thread.sleep(2000);
+                Thread.sleep(BULLETHOLDER_RELOAD);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -110,7 +116,7 @@ public class BulletsHolder implements Drawable {
 
         drawMagazine(g);
 
-        //drawBullets(g);
+        drawBullets(g);
 
 
         synchronized (BulletsHolder.class) {

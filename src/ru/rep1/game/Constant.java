@@ -11,8 +11,12 @@ public class Constant {
     public static final double GLOBAL_SCALE = ORIGINAL_WIDTH / (double)GAME_WIDTH;
     public static final double GLOBAL_SCALE_REV = 1.0D/ GLOBAL_SCALE;
 
-    public static final long COOLING_SPEED = 1000;
+    public static final long COOLING_SPEED = 2000;
     public static final double TARGET_SPEED = 3D;
+
+    public static final int BULLETHOLDER_MAX = 10;
+    public static final int BULLETHOLDER_WAIT = 500;
+    public static final int BULLETHOLDER_RELOAD = 2000;
 
     public enum State {
         INTRO,
@@ -29,7 +33,9 @@ public class Constant {
         ON_RELOAD_END,
         ON_TARGET_IN_PLACE,
         ON_GAME_OUTRO,
-        ON_GAME_FINISH
+        ON_GAME_FINISH,
+
+        ON_FIRE
     }
 
 }
