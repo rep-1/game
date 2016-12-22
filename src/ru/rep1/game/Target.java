@@ -56,11 +56,15 @@ public class Target implements Drawable {
         shotCount--;
         if(shotCount == 1) {
             color = Color.PINK;
+
+            EventBus.getInstance().publish(Constant.Event.TARGET_SHOT.name());
         }
         if(shotCount == 0) {
             color = Color.BLACK;
 
             speed = 0;
+
+            EventBus.getInstance().publish(Constant.Event.TARGET_KILLED.name());
         }
     }
 

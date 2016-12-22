@@ -35,7 +35,9 @@ public class Constant {
         ON_GAME_OUTRO,
         ON_GAME_FINISH,
 
-        ON_FIRE
+        ON_FIRE,
+        TARGET_SHOT,
+        TARGET_KILLED
     }
 
 }
