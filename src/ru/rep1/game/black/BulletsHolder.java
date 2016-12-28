@@ -1,10 +1,12 @@
-package ru.rep1.game;
+package ru.rep1.game.black;
+
+import ru.rep1.game.Constant;
+import ru.rep1.game.Drawable;
+import ru.rep1.game.EventBus;
+import ru.rep1.game.Utils;
 
 import java.awt.*;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.stream.Stream;
 
 import static ru.rep1.game.Constant.BULLETHOLDER_MAX;
 import static ru.rep1.game.Constant.BULLETHOLDER_RELOAD;

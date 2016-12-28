@@ -1,4 +1,9 @@
-package ru.rep1.game;
+package ru.rep1.game.black;
+
+import ru.rep1.game.Constant;
+import ru.rep1.game.Drawable;
+import ru.rep1.game.EventBus;
+import ru.rep1.game.Utils;
 
 import java.awt.*;
 import java.awt.geom.Dimension2D;
